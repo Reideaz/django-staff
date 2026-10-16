@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "checkJs": true,
+    "strictNullChecks": true
+  },
+  "include": [
+    "./static/js/global.js",
+    "./static/js/*"
+  ],
+  "exclude": [
+    "venv",
+    ".venv"
+  ]
+}

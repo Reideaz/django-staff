@@ -1,0 +1,29 @@
+<!-- Шаблон всплывающего окна сообщения. -->
+<div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header text-white" id="msgModalHeader">
+            <h5 class="modal-title" id="msgModalTitle">
+                Уведомление
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть">
+            </button>
+        </div>
+        <div class="modal-body">
+            <p id="msgModalMainText" class="fw-bold mb-2">
+            </p>
+            <div id="msgModalDetailsWrapper" class="d-none">
+                <p class="mb-1 text-muted small">
+                    Детали:
+                </p>
+                <div id="msgModalDetails" class="p-2 bg-light border rounded text-dark font-monospace small text-start" 
+                style="max-height: 200px; overflow-y: auto; white-space: pre-wrap;">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                OK
+            </button>
+        </div>
+    </div>
+</div>

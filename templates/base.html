@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-100">
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <link rel="stylesheet" href="/static/vendor/bootstrap5/bootstrap.min.css" >
+    <script defer src="/static/vendor/bootstrap5/bootstrap.bundle.min.js"></script>
+    <script defer src="/static/js/global.js"></script>
+
+    {% block scripts %}{% endblock scripts %}
+    <title>{% block title %}Учет сотрудников{% endblock title %}</title>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+    
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+
+            <!-- Логотип и название панели -->
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'index' %}">
+                <img src="{% static 'images/logo.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-text-top me-2 rounded">
+                <span class="fw-semibold">Учет сотрудников</span>
+            </a>
+
+            <!-- Меню -->
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a href="{% url 'index' %}" class="nav-link py-2 px-3">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'positions' %}" class="nav-link py-2 px-3">Должности</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'employees' %}" class="nav-link py-2 px-3">Сотрудники</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'about' %}" class="nav-link py-2 px-3">Об авторе</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основное содержимое страницы -->
+    <main class="flex-shrink-0 my-4">
+        <div class="container bg-white p-4 rounded shadow-sm">
+            <div class="row mb-4 border-bottom pb-2">
+                <div class="col text-primary fs-2 fw-bold">
+                    {% block header%}{% endblock header %}
+                </div>
+            </div>
+            <div class="row text-body">
+                <div class="col">
+                    {% block content%}{% endblock content %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Подвал -->
+    <footer class="footer mt-auto py-3 bg-primary text-white text-center shadow-lg">
+        <div class="container">
+            <span class="small">2026 Система учета сотрудников.</span>
+        </div>
+    </footer>
+</body>
+</html>

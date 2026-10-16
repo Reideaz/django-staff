@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load custom_json_script %}
+{% block scripts %}
+{% endblock scripts %}
+{% block title %}Сотрудники{% endblock title %}
+{% block header %}Сотрудники{% endblock header %}
+{% block content%}
+    <div id="container" class="container-fluid my-2">
+        <!-- 
+        При инициализации, внутри контейнере создаются элементы интерфейса
+        на основе конфигурации внедренной в шаблон страницы. После этого, 
+        происходит загрузка актуальных данных с сервера в формате JSON.
+        -->
+    </div>
+    {{ employee_meta|custom_json_script:"employee_meta" }}
+    <script type="module">
+        import { ApiService } from '/static/js/api-service.js';
+        import { AppController } from '/static/js/app-controller.js';
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        
+        const api = new ApiService(csrfToken);
+        const metaElement = document.getElementById('employee_meta');
+        const meta = JSON.parse(metaElement.textContent);
+
+        const container = document.getElementById('container');
+
+        // Построение каркаса пользовательского интерфейса.
+        const app = AppController.build(api, '/staff/api/employee/', container, meta);
+
+        // Асинхронная загрузка актуальных данных с сервера.
+        app.loadData();
+    </script>
+{% endblock content %}

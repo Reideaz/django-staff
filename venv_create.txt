@@ -1,0 +1,16 @@
+Установить Python 3.7 в систему.
+
+Вызвать создание venv через установленный Python.
+C:\Users\<USER>\AppData\Local\Programs\Python\Python37\python.exe -m venv .venv  
+
+Активировать окружение.
+.venv\Scripts\Activate.ps1
+
+Обновить pip
+python -m pip install --upgrade pip setuptools wheel
+
+Установить django.
+pip install django==1.11.29
+
+Установить драйвер PostgreSQL.
+pip install psycopg2-binary
