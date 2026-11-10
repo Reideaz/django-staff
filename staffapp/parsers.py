@@ -142,7 +142,7 @@ def parse_by_config(
         meta_fields (List[FieldMeta]): Список метаданных полей.
 
     Returns:
-        Dict[str, Any]: Словарь проверенных значений.
+        Dict[str, Any]: Словарь проверенных значений. Ключи словаря записаны из метаданных.
 
     Raises:
         ParseErrorCollection: В случае обнаружения ошибок, вызывает исключение содержащее список всех ошибок.
@@ -238,7 +238,7 @@ def ensure_no_id_in_body(fields_meta: List[FieldMeta], json_dict: dict):
 
         if id_field_name in json_dict:
             raise ParseError(
-                "Передача уникального идентификатора в теле этого запроса запрещено.",
+                "Передача уникального идентификатора в теле этого запроса запрещена.",
                 field_name=id_field_name
             )
 

@@ -145,7 +145,7 @@ class EmployeeAPIView(View):
             )
 
     def patch(self, request: HttpRequest, id: Optional[int] = None):
-        return patch_in_table(request, id, "employees", table_meta)
+        return patch_in_table(request, id, 'employees', table_meta)
 
     def delete(self, request: HttpRequest, id: Optional[int] = None):
         return delete_from_table(request, id, 'employees')

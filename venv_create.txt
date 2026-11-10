@@ -1,7 +1,9 @@
-Установить Python 3.7 в систему.
+Настрока виртуального окружения на примере ОС Windows.
 
-Вызвать создание venv через установленный Python.
-C:\Users\<USER>\AppData\Local\Programs\Python\Python37\python.exe -m venv .venv  
+Для начала необходимо скачать и установить Python версии 3.7 в систему.
+
+Затем создать venv именно через вызов Python версии 3.7.
+C:\Users\<USER>\AppData\Local\Programs\Python\Python37\python.exe -m venv .venv
 
 Активировать окружение.
 .venv\Scripts\Activate.ps1

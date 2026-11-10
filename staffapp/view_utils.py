@@ -206,11 +206,15 @@ def patch_in_table(
         # Наличие id в теле PATCH запроса не допускается
         ensure_no_id_in_body(table_meta.fields, json_dict)
 
+
         parsed_data = parse_by_config(
             input_data=json_dict,
             meta_fields=table_meta.fields
         )
-        
+
+        # Поскольку ключи словаря parsed_data сформированы на основе имен полей из 
+        # метаданных, то можно без опасений брать эти ключи и использовать их в 
+        # динамическом формировании SQL-строки
         fields_to_update = [f"{field_name} = %s" for field_name in parsed_data.keys()]
         values = list(parsed_data.values())
         values.append(parsed_id)
@@ -224,7 +228,7 @@ def patch_in_table(
             if cursor.rowcount == 0:
                 return api_response(
                     status_code=404, 
-                    message=f'Сотрудник с id {parsed_id} не найден'
+                    message=f'Запись с id {parsed_id} не найдена'
                 )
 
         return api_response(
