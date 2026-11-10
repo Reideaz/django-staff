@@ -1,10 +1,79 @@
 {% extends "base.html" %}
-{% block title %}Главная страница{% endblock title %}
-{% block header %}Это главная страница сайта - index.html.{% endblock header %}
-{% block content%}
-    <div class="container-fluid my-2 text-start">
-        <div class="row text-center text-primary fs-1 fw-bold">
-            <div> {{ my_text }}  </div>
+
+{% block title %}Главная{% endblock title %}
+{% block header %}Главная панель{% endblock header %}
+
+{% block content %}
+<div class="container-fluid py-3">
+
+    <!-- Информационная секция -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="p-4 mb-4 bg-white border rounded-3 shadow-sm">
+                <div class="container-fluid py-2">
+                    <h1 class="h3 fw-bold text-dark">Приложение STAFFAPP</h1>
+                    <p class="col-md-8 fs-6 text-muted mb-0">
+                        Позволяет выполнять все базовые операции (создание, просмотр, редактирование и удаление записей) 
+                        в отношении основных сущностей "Сотрудники" и "Должности".
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Сетка функциональных модулей -->
+    <div class="row g-4">
+
+        <!-- Модуль: Сотрудники -->
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm border-primary border-top border-4 transition-up">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="mb-4 d-flex justify-content-center w-100" style="width: 64px; height: 64px;">
+                        {% include "icons/employees.svg" %}
+                    </div>
+                    <h3 class="card-title h5 fw-bold text-dark">Сотрудники</h3>
+                    <p class="card-text text-muted mb-4">
+                        Ведение перечня сотрудников.
+                    </p>
+                    <div class="mt-auto">
+                        <a href="{% url 'employees' %}" class="btn btn-primary w-100 py-2 shadow-sm stretched-link">
+                            Управление списком
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модуль: Должности -->
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm border-primary border-top border-4 transition-up">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="mb-4 d-flex justify-content-center w-100" style="width: 64px; height: 64px;">
+                        {% include "icons/positions.svg" %}
+                    </div>
+                    <h3 class="card-title h5 fw-bold text-dark">Должности</h3>
+                    <p class="card-text text-muted mb-4">
+                        Ведение перечня должностей.
+                    </p>
+                    <div class="mt-auto">
+                        <a href="{% url 'positions' %}" class="btn btn-primary w-100 py-2 shadow-sm stretched-link">
+                            Управление списком
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .transition-up {
+        transition: transform 0.2s ease-in-out, shadow 0.2s ease-in-out;
+    }
+    .transition-up:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    }
+</style>
 {% endblock content %}
