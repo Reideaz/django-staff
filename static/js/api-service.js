@@ -91,7 +91,7 @@ export class ApiService {
     }
 
     /**
-     * Асинхронный PUT-запрос для полного обновления существующих данных.
+     * Асинхронный PATCH-запрос для обновления существующих данных.
      * @param {string} endpoint - Конечная точка запроса.
      * @param {object} data - Данные для отправки на сервер.
      * @returns {Promise<import('./api.js').ApiResponse>} 

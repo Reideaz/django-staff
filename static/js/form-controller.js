@@ -258,7 +258,6 @@ export class FormController {
             this.renderSelectError(elementId)
             return;
         }
-
         
         const reference = this.#getReferenceMeta(name);
 
@@ -283,12 +282,10 @@ export class FormController {
 
      /**
      * Находит метаданные поля по его имени.
-     * 
      * @param {string} fieldName - Имя поля, которое нужно найти
      * @returns {import('./api.js').ReferenceMeta | null}
      */
     #getReferenceMeta(fieldName) {
-
         const field = this.#tableMeta.fields.find(f => f.name === fieldName);
 
         if (!field || !field.reference) {
@@ -331,7 +328,7 @@ export class FormController {
     /** Привязка обработчиков событий */
     #setupEvents() {
 
-        // Кнопка СОХРАНИТЬ (POST / PUT)
+        // Кнопка СОХРАНИТЬ
         document.getByIdNotNull('form_save_btn').addEventListener('click', () => {
             
             /** @type {import('./api.js').DbData} */
@@ -359,7 +356,7 @@ export class FormController {
             if (!isValid) return;
 
             if (this.#currentId) {
-                data['id'] = this.#currentId;
+                data.id = this.#currentId;
             }
 
             if (this.#onSave) 
