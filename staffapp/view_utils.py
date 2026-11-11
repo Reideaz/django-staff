@@ -30,7 +30,7 @@ def get_from_table(request: HttpRequest, id: Union[int, str, None], table_name: 
                       используется HttpResponse.
     """
     try:
-        parsed_id = parse_id(id)
+        parsed_id = parse_id(id, 'id')
 
         if parsed_id:
             return get_by_id(parsed_id, table_name)
@@ -135,19 +135,15 @@ def delete_from_table(request: HttpRequest, id: Union[int, str, None], table_nam
             - 500 Internal Server Error: Непредвиденная ошибка сервера.
     """
     try:
-        if not id:
-            return api_response(
-                status_code=400, 
-                message='Не указан id для удаления ресурса'
-            )
-        
-        parsed_id = parse_id(id)
+        # Наличие id обязательно, надо знать какой ресурс удалять
+        parsed_id = parse_id(value=id, field_name='id', required=True)
 
         sql = f'DELETE FROM {table_name} WHERE id = %s;'
         
         with connection.cursor() as cursor:
             cursor.execute(sql, (parsed_id,))
-            
+
+            # Если ни одна строка не затронута, значит ресурса не было в базе.
             if cursor.rowcount == 0:
                 return api_response(
                     status_code=404,
@@ -189,23 +185,18 @@ def patch_in_table(
         table_meta (TableMeta): Метаданные конкретной таблицы.
 
     Returns:
-        JsonResponse: Сообщение в формате JSON.
-
+        JsonResponse: Ответ в формате JSON.
     """
     try:
-        # Присутствие id обязательно, чтобы знать какой ресурс обновлять
-        if not id:
-            return api_response(
-                status_code=400, 
-                message='Не указан id для обновления ресурса'
-            )
+        # Наличие id обязательно, надо знать какой ресурс обновлять
+        parsed_id = parse_id(value=id, field_name='id', required=True)
 
-        parsed_id = parse_id(id)
         json_dict = get_json_body(request)
 
-        # Наличие id в теле PATCH запроса не допускается
+        # Наличие id в теле запроса не допускается.
+        # Жизненным циклом id управляет база данных
+        # их изменение бэкендом не допускается.
         ensure_no_id_in_body(table_meta.fields, json_dict)
-
 
         parsed_data = parse_by_config(
             input_data=json_dict,

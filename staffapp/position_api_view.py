@@ -7,7 +7,7 @@ from typing import Optional
 from staffapp.position_meta import table_meta
 from staffapp.view_utils import get_json_body, patch_in_table
 from staffapp.view_utils import api_response, get_from_table, delete_from_table
-from staffapp.parsers import parse_by_config, ensure_no_id_in_body
+from staffapp.parsers import parse_by_config, ensure_no_id_in_body, validate_required_fields
 from staffapp.parsers import ParseError, ParseErrorCollection
 
 class PositionAPIView(View):
@@ -20,13 +20,19 @@ class PositionAPIView(View):
         try:
             # Параметр id в POST запросах не используется
 
-            json_dict = get_json_body(request)
+            input_data = get_json_body(request)
 
             # Наличие id в теле POST запроса не допускается
-            ensure_no_id_in_body(table_meta.fields, json_dict)
+            # Жизненным циклом id управляет база данных
+            ensure_no_id_in_body(table_meta.fields, input_data)
 
             parsed_data = parse_by_config(
-                input_data=json_dict, 
+                input_data=input_data, 
+                meta_fields=table_meta.fields
+            )
+
+            validate_required_fields(
+                input_data=input_data, 
                 meta_fields=table_meta.fields
             )
         
@@ -58,7 +64,7 @@ class PositionAPIView(View):
             )
 
     def patch(self, request: HttpRequest, id: Optional[int] = None):
-        return patch_in_table(request, id, "employees", table_meta)
+        return patch_in_table(request, id, 'positions', table_meta)
 
     def delete(self, request: HttpRequest, id: Optional[int] = None):
         return delete_from_table(request, id, 'positions')

@@ -32,23 +32,23 @@ def is_empty(value) -> bool:
         return True
     return False
 
-def raise_if_required(required = False, field_name: Optional[str] = None):
+def raise_if_required(field_name: str, required: bool):
     """ Вызывает исключение, если значение обязательно. """
     if required:
-        raise ParseError("Поле обязательно для заполнения.", field_name)
+        raise ParseError("Не указано обязательное значение.", field_name)
 
 def parse_string(
         value,
-        required: bool = False,
+        field_name: str,
         max_length: Optional[int] = None,
-        field_name: Optional[str] = None
+        required: bool = False
 ) -> Optional[str]:
     """ Парсинг и валидация строкового поля. """
     if isinstance(value, str):
         value = value.strip()
 
     if is_empty(value):
-        raise_if_required(required, field_name)
+        raise_if_required(field_name, required)
         return None
     
     if not isinstance(value, str):
@@ -61,14 +61,14 @@ def parse_string(
 
 def parse_int(
         value,
-        required: bool = False,
+        field_name: str,
         min_value: Optional[int] = None,
         max_value: Optional[int] = None,
-        field_name: Optional[str] = None
+        required: bool = False
 ) -> Optional[int]:
     """ Парсинг и валидация числового поля. """
     if is_empty(value):
-        raise_if_required(required, field_name)
+        raise_if_required(field_name, required)
         return None
         
     try:
@@ -86,12 +86,12 @@ def parse_int(
 
 def parse_id(
         value, 
-        required: bool = False,
-        field_name: Optional[str] = None
+        field_name: str,
+        required: bool = False
 ) -> Optional[int]:
     """ Парсинг и валидация идентификатора записи. """
     if is_empty(value):
-        raise_if_required(required, field_name)
+        raise_if_required(field_name, required)
         return None
         
     try:
@@ -105,16 +105,16 @@ def parse_id(
     
 def parse_select(
         value, 
+        field_name: str,
         options: List[SelectOption],
-        required: bool = False,
-        field_name: Optional[str] = None
+        required: bool = False
 ) -> Optional[str]:
     """ Парсинг и валидация значения по списку вариантов. """
     if isinstance(value, str):
         value = value.strip()
 
     if is_empty(value):
-        raise_if_required(required, field_name)
+        raise_if_required(field_name, required)
         return None
         
     if not any(option.value == value for option in options):
@@ -131,11 +131,12 @@ def parse_by_config(
         meta_fields: List[FieldMeta]
 ) -> Dict[str, Any]:
     """ 
-    Парсит и валидирует все входные данные на основе предоставленной конфигурации колонок. 
+    Парсит и валидирует все входные данные на основе предоставленной конфигурации колонок.
 
-    Функция проходит по всем полям из `meta_fields`, находит соответствующие ключи
-    в `input_data` и применяет правила валидации к ним. Процесс не прерывается на первой ошибке, 
-    а собирает все обнаруженные проблемы.
+    Функция проходит по всем полям из `input_data`, находит соответствующие ключи
+    в `meta_fields` и применяет правила валидации к ним. Неизвестные имена полей записываются 
+    в ошибки валидации. Процесс не прерывается на одной ошибке, а собирает все обнаруженные
+    проблемы в общую коллекцию.
 
     Args:
         input_data (Dict[str, Any]): Входные данные в формате словаря JSON.
@@ -145,37 +146,45 @@ def parse_by_config(
         Dict[str, Any]: Словарь проверенных значений. Ключи словаря записаны из метаданных.
 
     Raises:
-        ParseErrorCollection: В случае обнаружения ошибок, вызывает исключение содержащее список всех ошибок.
+        ParseErrorCollection: Исключение содержащее коллекцию собранных ошибок.
     """
+
+    # Преобразуем список в словарь для быстрого поиска
+    meta_map = {field.name: field for field in meta_fields}
+
     result_data = {}
     errors = []
 
-    for field in meta_fields:
+    for name, value in input_data.items():
         try:
-            name = field.name
+            field = meta_map.get(name)
+
+            if not field:
+                raise ParseError(f"Неизвестное поле.", name)
+
+            field_name = field.name
             field_type = field.type
-            value = input_data.get(name)
 
             if field_type in ("id", "foreign_key"):
-                result_data[name] = parse_id(
+                result_data[field_name] = parse_id(
                     value,
-                    required=field.required,
-                    field_name=field.label
+                    field_name=field.label,
+                    required=field.required
                 )
             elif field_type == "number":
-                result_data[name] = parse_int(
+                result_data[field_name] = parse_int(
                     value, 
-                    required=field.required,
+                    field_name=field.label,
                     min_value=field.min_value,
                     max_value=field.max_value,
-                    field_name=field.label 
+                    required=field.required
                 )
             elif field_type == "string":
-                result_data[name] = parse_string(
+                result_data[field_name] = parse_string(
                     value,
-                    required=field.required,
+                    field_name=field.label,
                     max_length=field.max_length,
-                    field_name=field.label 
+                    required=field.required
                 )
             elif field_type == "select":
                 options = field.options
@@ -184,11 +193,11 @@ def parse_by_config(
                         'Атрибут "options" обязан присутствовать '
                         'в конфигурации при использовании типа select.'
                     )
-                result_data[name] = parse_select(
+                result_data[field_name] = parse_select(
                     value, 
+                    field_name=field.label,
                     options=options, 
-                    required=field.required, 
-                    field_name=field.label 
+                    required=field.required
                 )
             else:
                 raise NotImplementedError
@@ -201,7 +210,7 @@ def parse_by_config(
 
     return result_data
 
-def check_missing_fields(json_dict: Dict[str, Any], meta_fields: List[FieldMeta]) -> None:
+def check_all_fields(json_dict: Dict[str, Any], meta_fields: List[FieldMeta]) -> None:
     """
     Проверяет присутствие всех полей конфигурации в теле запроса независимо от наличия флага required.
 
@@ -212,9 +221,9 @@ def check_missing_fields(json_dict: Dict[str, Any], meta_fields: List[FieldMeta]
     Raises:
         ParseErrorCollection: Если отсутствует одно или несколько полей.
     """
-    config_fields = {field.name for field in meta_fields}
-    input_fields = set(json_dict.keys())
-    missing_fields = config_fields - input_fields
+    meta_set = {field.name for field in meta_fields}
+    input_set = set(json_dict.keys())
+    missing_fields = meta_set - input_set
 
     if missing_fields:
         errors = []
@@ -228,17 +237,34 @@ def check_missing_fields(json_dict: Dict[str, Any], meta_fields: List[FieldMeta]
         raise ParseErrorCollection(errors)
 
 def ensure_no_id_in_body(fields_meta: List[FieldMeta], json_dict: dict):
-        """
-        Метод выбрасывается ParseError при наличии первичного ключа в теле JSON.
-        """
-        id_field_name = next((f.name for f in fields_meta if f.type == "id"), None)
+    """
+    Метод выбрасывается ParseError при наличии первичного ключа в теле JSON.
+    """
+    id_field_name = next((f.name for f in fields_meta if f.type == "id"), None)
 
-        if id_field_name is None:
-            raise AttributeError('В метаданных отсутствует уникальный идентификатор записи.')
+    if id_field_name is None:
+        raise AttributeError('В метаданных отсутствует уникальный идентификатор записи.')
 
-        if id_field_name in json_dict:
-            raise ParseError(
-                "Передача уникального идентификатора в теле этого запроса запрещена.",
-                field_name=id_field_name
-            )
+    if id_field_name in json_dict:
+        raise ParseError(
+            "Передача уникального идентификатора в теле этого запроса запрещена.",
+            field_name=id_field_name
+        )
 
+def validate_required_fields(input_data: Dict[str, Any], meta_fields: List[FieldMeta]):
+    """
+    Проверяет наличие и непустоту всех обязательных полей.
+    """
+    errors = []
+    for field in meta_fields:
+            
+        value = input_data.get(field.name)
+        
+        if is_empty(value):
+            try:
+                raise_if_required(required=field.required, field_name=field.label)
+            except ParseError as e:
+                errors.append(e)
+
+    if errors:
+        raise ParseErrorCollection(errors)

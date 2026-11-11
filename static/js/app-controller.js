@@ -187,7 +187,11 @@ export class AppController {
             if (formData.id) {
                 // При наличии id отправляем запрос на обновление полей записи.
                 const url = `${this.#baseUrl}${formData.id}/`
-                response = await this.#apiService.patch(url, formData);
+
+                // Отделяем id от остальных данных формы
+                const { id, ...patchData } = formData;
+
+                response = await this.#apiService.patch(url, patchData);
             } else {
                 // При отсутствии - добавляем новую.
                 response = await this.#apiService.post(this.#baseUrl, formData);
