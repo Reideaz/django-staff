@@ -30,14 +30,14 @@ class EmployeeAPIView(View):
                     # Запрос только одной записи
                     sql = """
                         SELECT 
-                            t.id, 
-                            t.full_name, 
-                            t.gender, 
-                            t.age,
-                            json_build_object('value', t.position_id::text, 'label', p.title) AS position_id
-                        FROM employees t
-                        LEFT JOIN positions p ON t.position_id = p.id
-                        WHERE t.id = %s;
+                            e.id, 
+                            e.full_name, 
+                            e.gender, 
+                            e.age,
+                            json_build_object('value', e.position_id::text, 'label', p.title) AS position_id
+                        FROM employees e
+                        LEFT JOIN positions p ON e.position_id = p.id
+                        WHERE e.id = %s;
                     """
                     with connection.cursor() as cursor:
                         cursor.execute(sql, (parsed_id,))
@@ -63,14 +63,14 @@ class EmployeeAPIView(View):
                         SELECT json_agg(row_to_json(row))::text 
                         FROM (
                             SELECT 
-                                t.id, 
-                                t.full_name, 
-                                t.gender, 
-                                t.age,
-                                json_build_object('value', t.position_id::text, 'label', p.title) AS position_id
-                            FROM employees t
-                            LEFT JOIN positions p ON t.position_id = p.id
-                            ORDER BY t.id
+                                e.id, 
+                                e.full_name, 
+                                e.gender, 
+                                e.age,
+                                json_build_object('value', e.position_id::text, 'label', p.title) AS position_id
+                            FROM employees e
+                            LEFT JOIN positions p ON e.position_id = p.id
+                            ORDER BY e.id
                         ) row;
                     """
                     with connection.cursor() as cursor:
