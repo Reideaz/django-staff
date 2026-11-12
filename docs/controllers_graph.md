@@ -15,7 +15,7 @@ graph TD
         Confirm[ConfirmController]
     end
 
-    App --- Api
+    App --> Api
     
     App --> Table
     App --> Form

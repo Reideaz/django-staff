@@ -115,7 +115,9 @@ export class AppController {
             }, 'Добавить запись' );
         btnWrapper.appendChild(appAddBtn);
 
-        container.replaceChildren(tableElement, btnWrapper, formElement, confirmElement);
+        container.replaceChildren(
+            tableElement, btnWrapper, formElement, infoElement, confirmElement
+        );
         
         const tableController = TableController.build(tableElement, tableMeta);
         const formController = FormController.build(formElement, tableMeta);

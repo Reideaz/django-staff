@@ -29,27 +29,12 @@ def get_from_table(request: HttpRequest, id: Union[int, str, None], table_name: 
         HttpResponse: В случае передачи готовой строки JSON из PostgreSQL
                       используется HttpResponse.
     """
-    try:
-        parsed_id = parse_id(id, 'id')
+    parsed_id = parse_id(id, 'id')
 
-        if parsed_id:
-            return get_by_id(parsed_id, table_name)
-        else:
-            return get_all_raw_json(table_name)
-
-    except ParseError as e:
-        return api_response(
-            status_code=400,
-            message='Ошибка валидации данных',
-            error_details=str(e)
-        )
-    
-    except Exception as e:
-        return api_response(
-            status_code=500, 
-            message='Непредвиденная ошибка сервера', 
-            error_details=str(e)
-        )
+    if parsed_id:
+        return get_by_id(parsed_id, table_name)
+    else:
+        return get_all_raw_json(table_name)
 
 def get_by_id(id: Union[int, str], table_name: str) -> JsonResponse:
     """
@@ -134,40 +119,25 @@ def delete_from_table(request: HttpRequest, id: Union[int, str, None], table_nam
             - 404 Not Found: Запись с указанным id не найдена в таблице.
             - 500 Internal Server Error: Непредвиденная ошибка сервера.
     """
-    try:
-        # Наличие id обязательно, надо знать какой ресурс удалять
-        parsed_id = parse_id(value=id, field_name='id', required=True)
+    # Наличие id обязательно, надо знать какой ресурс удалять
+    parsed_id = parse_id(value=id, field_name='id', required=True)
 
-        sql = f'DELETE FROM {table_name} WHERE id = %s;'
-        
-        with connection.cursor() as cursor:
-            cursor.execute(sql, (parsed_id,))
+    sql = f'DELETE FROM {table_name} WHERE id = %s;'
+    
+    with connection.cursor() as cursor:
+        cursor.execute(sql, (parsed_id,))
 
-            # Если ни одна строка не затронута, значит ресурса не было в базе.
-            if cursor.rowcount == 0:
-                return api_response(
-                    status_code=404,
-                    message=f'Запись с id {parsed_id} не найдена'
-                )
+        # Если ни одна строка не затронута, значит ресурса не было в базе.
+        if cursor.rowcount == 0:
+            return api_response(
+                status_code=404,
+                message=f'Запись с id {parsed_id} не найдена'
+            )
 
-        return api_response(
-            status_code=200, 
-            message=f'Запись успешно удалена'
-        )
-
-    except ParseError as e:
-        return api_response(
-            status_code=400,
-            message='Ошибка валидации данных',
-            error_details=str(e)
-        )
-
-    except Exception as e:
-        return api_response(
-            status_code=500, 
-            message='Непредвиденная ошибка сервера', 
-            error_details=str(e)
-        )
+    return api_response(
+        status_code=200, 
+        message=f'Запись успешно удалена'
+    )
 
 def patch_in_table(
         request: HttpRequest, 
@@ -187,59 +157,44 @@ def patch_in_table(
     Returns:
         JsonResponse: Ответ в формате JSON.
     """
-    try:
-        # Наличие id обязательно, надо знать какой ресурс обновлять
-        parsed_id = parse_id(value=id, field_name='id', required=True)
+    # Наличие id обязательно, надо знать какой ресурс обновлять
+    parsed_id = parse_id(value=id, field_name='id', required=True)
 
-        json_dict = get_json_body(request)
+    json_dict = get_json_body(request)
 
-        # Наличие id в теле запроса не допускается.
-        # Жизненным циклом id управляет база данных
-        # их изменение бэкендом не допускается.
-        ensure_no_id_in_body(table_meta.fields, json_dict)
+    # Наличие id в теле запроса не допускается.
+    # Жизненным циклом id управляет база данных
+    # их изменение бэкендом не допускается.
+    ensure_no_id_in_body(table_meta.fields, json_dict)
 
-        parsed_data = parse_by_config(
-            input_data=json_dict,
-            meta_fields=table_meta.fields
-        )
+    parsed_data = parse_by_config(
+        input_data=json_dict,
+        meta_fields=table_meta.fields
+    )
 
-        # Поскольку ключи словаря parsed_data сформированы на основе имен полей из 
-        # метаданных, то можно без опасений брать эти ключи и использовать их в 
-        # динамическом формировании SQL-строки
-        fields_to_update = [f"{field_name} = %s" for field_name in parsed_data.keys()]
-        values = list(parsed_data.values())
-        values.append(parsed_id)
+    # Поскольку ключи словаря parsed_data сформированы на основе имен полей из 
+    # метаданных, то можно без опасений брать эти ключи и использовать их в 
+    # динамическом формировании SQL-строки
+    fields_to_update = [f"{field_name} = %s" for field_name in parsed_data.keys()]
+    values = list(parsed_data.values())
+    values.append(parsed_id)
 
-        sql = f"UPDATE {table_name} SET {', '.join(fields_to_update)} WHERE id = %s;"
-        
-        with connection.cursor() as cursor:
-            cursor.execute(sql, tuple(values))
-
-            # Если ни одна строка не обновилась, значит ресурса нет в базе.
-            if cursor.rowcount == 0:
-                return api_response(
-                    status_code=404, 
-                    message=f'Запись с id {parsed_id} не найдена'
-                )
-
-        return api_response(
-            status_code=200, 
-            message='Запись успешно обновлена'
-        )
-        
-    except (ParseErrorCollection, ParseError) as e:
-        return api_response(
-            status_code=400,
-            message='Ошибка валидации данных',
-            error_details=str(e)
-        )
+    sql = f"UPDATE {table_name} SET {', '.join(fields_to_update)} WHERE id = %s;"
     
-    except Exception as e:
-        return api_response(
-            status_code=500,
-            message='Непредвиденная ошибка сервера',
-            error_details=str(e)
-        )
+    with connection.cursor() as cursor:
+        cursor.execute(sql, tuple(values))
+
+        # Если ни одна строка не обновилась, значит ресурса нет в базе.
+        if cursor.rowcount == 0:
+            return api_response(
+                status_code=404, 
+                message=f'Запись с id {parsed_id} не найдена'
+            )
+
+    return api_response(
+        status_code=200, 
+        message='Запись успешно обновлена'
+    )
 
 def get_json_body(request: HttpRequest) -> Dict[str, Any]:
     """Извлекает JSON из тела запроса."""
