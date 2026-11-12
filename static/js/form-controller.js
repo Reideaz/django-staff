@@ -196,7 +196,7 @@ export class FormController {
 
     /**
      * Метод позднего связывания событий-колбэков.
-     * @param {FormActionCallbacks} callbacks - Колбэки при создании/обновлении и удалении записи.
+     * @param {FormActionCallbacks} callbacks - Колбэки формы.
      */
     setCallbacks(callbacks)
     {
