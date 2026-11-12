@@ -1,0 +1,7 @@
+/* Меняем цвет строчного кода и добавляем легкий фон как на GitHub */
+:not(pre):not(.hljs) > code {
+    color: #1f2328 !important;
+    background-color: #f3f4f6 !important;
+    padding: 2px 5px;
+    border-radius: 4px;
+}
