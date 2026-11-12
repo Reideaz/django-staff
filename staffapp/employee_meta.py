@@ -51,6 +51,12 @@ table_meta: TableMeta = TableMeta(
                 value_field="id",
                 label_field='title'
             )
+        ),
+        FieldMeta(
+            name="category",
+            label="Категория",
+            type="string",
+            editable=False
         )
     ]
 )

@@ -111,7 +111,14 @@ export class FormController {
         </div>
         `
 
-        const inputElements = getVisibleMetaFields(tableMeta).map( field => {
+        // В форму ввода выводятся только поля:
+        // - визуально видимые (hidden == false)
+        // - разрешено редактирование (editable == true)
+        const editableFields = getVisibleMetaFields(tableMeta).filter(
+            field => field.editable
+        );
+
+        const inputElements = editableFields.map( field => {
             const fieldElement = createNode('div', { class: 'mb-3 text-start' });
 
             const labelElement = createNode('label', { 

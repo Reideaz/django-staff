@@ -28,13 +28,13 @@ export interface FieldMeta {
     name: string;
     label: string;
     type: 'string' | 'number' | 'select' | 'boolean' | 'foreign_key';
-    required?: boolean;
-    editable?: boolean;
-    hidden?: boolean;
+    required: boolean;
+    editable: boolean;
+    hidden: boolean;
+    unique: boolean;
     min_value?: number;
     max_value?: number;
     max_length?: number;
-    unique: boolean;
     options?: SelectOption[];
     reference?: ReferenceMeta;
 }

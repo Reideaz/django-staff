@@ -93,7 +93,8 @@ FROM (
         e.full_name, 
         e.gender, 
         e.age,
-        json_build_object('value', e.position_id::text, 'label', p.title) AS position_id
+        json_build_object('value', e.position_id::text, 'label', p.title) AS position_id,
+        p.category
     FROM employees e
     LEFT JOIN positions p ON e.position_id = p.id
     ORDER BY e.id
