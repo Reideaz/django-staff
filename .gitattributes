@@ -1,0 +1,6 @@
+# Автоматически приводить все текстовые файлы в репозитории к LF
+* text=auto eol=lf
+
+# Для пакетных файлов Windows принудительно оставлять CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
