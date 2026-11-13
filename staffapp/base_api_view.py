@@ -1,4 +1,3 @@
-from django.http import JsonResponse
 from django.views import View
 
 from staffapp.view_utils import api_response

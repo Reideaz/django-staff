@@ -234,4 +234,8 @@ def api_response(
     if error_details is not None:
         response_data['error_details'] = error_details
         
-    return JsonResponse(response_data, status=status_code)
+    return JsonResponse(
+        response_data, 
+        status=status_code,
+        json_dumps_params={'ensure_ascii': False}
+    )
