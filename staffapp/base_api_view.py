@@ -48,7 +48,7 @@ class BaseAPIView(View):
                 return api_response(
                     status_code=409,
                     message='Ошибка уникальности данных',
-                    error_details='Запись с таким значением уже существует. Нарушено ограничение UNIUQUE.'
+                    error_details='Запись с таким значением уже существует. Нарушено ограничение UNIQUE.'
                 )
 
             if pgcode == '23514':

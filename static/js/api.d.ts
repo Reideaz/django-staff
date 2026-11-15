@@ -52,6 +52,10 @@ export interface TableMeta {
  */
 export function getVisibleMetaFields(tableMeta: TableMeta): FieldMeta[];
 
+/**
+ * Функция возвращает метаданные только редактируемых полей для интерфейса пользователя.
+ */
+export function getEditableMetaFields(tableMeta: TableMeta): FieldMeta[];
 
 
 /** ИНТЕРФЕЙС СУЩНОСТЕЙ БАЗЫ ДАННЫХ */

@@ -1,5 +1,5 @@
-import { alertError, createNode } from './utils.js';
-import { getVisibleMetaFields } from './api.js'
+import { createNode } from './utils.js';
+import { getEditableMetaFields } from './api.js'
 
 /**
  * Колбэки формы ввода данных.
@@ -29,6 +29,12 @@ export class FormController {
     #tableMeta;
 
     /**
+     * Метаданные только тех полей, которые редактирует пользователь.
+     * @type {Array<import('./api.js').FieldMeta>}
+     */
+    #editableMetaFields;
+
+    /**
      * Идентификатор текущей сущности.
      * @type {string|number|null}
      */
@@ -52,6 +58,8 @@ export class FormController {
      */
     #onForeignKeyLoadRequest = null;
 
+
+
     /**
      * Создание экземпляра класса происходит в статическом методе build().
      * @param {HTMLElement} container - Контейнер для формы.
@@ -59,6 +67,7 @@ export class FormController {
      */
     constructor(container, tableMeta) {
         this.#tableMeta = tableMeta;
+        this.#editableMetaFields = getEditableMetaFields(tableMeta);
 
         // @ts-expect-error - bootstrap подключается глобально через шаблон Django (base.html)
         if (!window.bootstrap) {
@@ -111,12 +120,7 @@ export class FormController {
         </div>
         `
 
-        // В форму ввода выводятся только поля:
-        // - визуально видимые (hidden == false)
-        // - разрешено редактирование (editable == true)
-        const editableFields = getVisibleMetaFields(tableMeta).filter(
-            field => field.editable
-        );
+        const editableFields = getEditableMetaFields(tableMeta)
 
         const inputElements = editableFields.map( field => {
             const fieldElement = createNode('div', { class: 'mb-3 text-start' });
@@ -180,8 +184,14 @@ export class FormController {
                     name: field.name
                 });
             }
+            
+            // Добавление рядом с полем элемента для вывода ошибок
+            const feedbackElement = createNode('div', {
+                id: `error-${field.name}`,
+                class: 'invalid-feedback'
+            });
 
-            fieldElement.append(labelElement, inputElement)
+            fieldElement.append(labelElement, inputElement, feedbackElement)
 
             return fieldElement
         })
@@ -224,32 +234,68 @@ export class FormController {
     }
 
     /**
-     * Метод очищает поля ввода формы.
-     */
-    #resetFields() {
-        this.#tableMeta?.fields.forEach(field => {
-            const input = /** @type {HTMLInputElement} */(document.getElementById(`field-${field.name}`));
-            if (input) input.value = '';
-        });
-    }
-
-    /**
      * Настраивает форму на режим редактирования записи и открывает.
      * @param {import('./api.js').DbData} data - Объект данных.
      */
     openEdit(data) {
-        if (data.id)
-        {
-            this.#currentId = data.id;
-        } else {
-            throw new Error('Запись не имеет идентификатора id.');
-        }
-
+        if (!data.id) throw new Error('Запись не имеет идентификатора id.');
+        
+        this.#currentId = data.id;
+        this.#resetFields();
         this.#fillFields(data);
-
         document.getByIdNotNull('form_title').textContent = `Редактирование записи id ${data.id}`;
 
         this.show();
+    }
+
+    /**
+     * Метод возвращает поля формы в их начальное состояние.
+     */
+    #resetFields() {
+        this.#editableMetaFields.forEach(field => {
+            const input = /** @type {HTMLInputElement} */(document.getElementById(`field-${field.name}`));
+            if(input) input.value = '';
+        });
+        this.#clearValidationErrors();
+    }
+
+    /**
+     * Метод заполняет поля формы данными, которые присутствуют в объекте data.
+     * @param {import('./api.js').DbData} data - Объект данных.
+     */
+    #fillFields(data) {
+        this.#editableMetaFields.forEach(field => {
+            if (data[field.name] !== undefined && data[field.name] !== null) {
+                const input = /** @type {HTMLInputElement} */ (document.getElementById(`field-${field.name}`));
+                if(input) input.value = String(data[field.name]);
+            }
+        });
+    }
+
+    /**
+     * Отображает сообщение об ошибке валидации для конкретного поля.
+     * @param {string} fieldName - Имя поля из метаданных.
+     * @param {string} message - Текст ошибки.
+     */
+    #showFieldError(fieldName, message) {
+        const input = document.getByIdNotNull(`field-${fieldName}`);
+        const feedback = document.getByIdNotNull(`error-${fieldName}`);
+
+        input.classList.add('is-invalid');
+        feedback.textContent = message;
+    }
+
+    /**
+     * Очищает все сообщения об ошибках.
+     */
+    #clearValidationErrors() {
+        this.#editableMetaFields.forEach(field => {
+            const input = document.getByIdNotNull(`field-${field.name}`);
+            const feedback = document.getByIdNotNull(`error-${field.name}`);
+
+            input.classList.remove('is-invalid');
+            feedback.textContent = '';
+        });
     }
 
     /**
@@ -311,17 +357,6 @@ export class FormController {
         selectElement.append(createNode('option', { value: '' }, 'Ошибка загрузки'));
     }
 
-    /**
-     * Метод заполняет данными поля формы.
-     * @param {import('./api.js').DbData} data - Объект данных.
-     */
-    #fillFields(data) {
-        this.#tableMeta?.fields.forEach(field => {
-            const input = /** @type {HTMLInputElement} */ (document.getElementById(`field-${field.name}`));
-            if (input) input.value = data[field.name] !== undefined ? data[field.name] : '';
-        });
-    }
-
     /** Метод открывает окно формы */
     show() {
         this.#modalInstance?.show();
@@ -337,7 +372,8 @@ export class FormController {
 
         // Кнопка СОХРАНИТЬ
         document.getByIdNotNull('form_save_btn').addEventListener('click', () => {
-            
+            this.#clearValidationErrors();
+
             /** @type {import('./api.js').DbData} */
             const data = {};
             let isValid = true;
@@ -351,7 +387,7 @@ export class FormController {
                 
                 // Валидация обязательных полей
                 if (field.required && !val) {
-                    alert(`Поле "${field.label}" обязательно для заполнения`);
+                    this.#showFieldError(field.name, `Поле "${field.label}" обязательно для заполнения`);
                     isValid = false;
                     return;
                 }

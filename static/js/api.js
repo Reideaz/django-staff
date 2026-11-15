@@ -2,10 +2,14 @@
  * @param {import('./api.js').TableMeta} tableMeta
  */
 export function getVisibleMetaFields(tableMeta) {
-    if (!tableMeta || !Array.isArray(tableMeta.fields)) {
-        return [];
-    }
     return tableMeta.fields.filter(field => !field.hidden);
+}
+
+/**
+ * @param {import('./api.js').TableMeta} tableMeta
+ */
+export function getEditableMetaFields(tableMeta) {
+    return tableMeta.fields.filter(field => field.editable);
 }
 
 /**
