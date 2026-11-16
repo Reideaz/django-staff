@@ -24,8 +24,7 @@ def get_from_table(request: HttpRequest, id: Union[int, str, None], table_name: 
                           непосредственно в коде бэкенда, чтобы исключить SQL-инъекции.
 
     Returns:
-        JsonResponse: При передачи одной записи и генерации ошибок 
-                      используется JsonResponse.
+        JsonResponse: При передачи одной записи используется JsonResponse.
         HttpResponse: В случае передачи готовой строки JSON из PostgreSQL
                       используется HttpResponse.
     """
@@ -46,8 +45,7 @@ def get_by_id(id: Union[int, str], table_name: str) -> JsonResponse:
                           непосредственно в коде бэкенда, чтобы исключить SQL-инъекции.
     
     Returns:
-        JsonResponse: Возвращает стандартизированный ответ, содержащий
-                      данные одной записи.
+        JsonResponse: Стандартизированный ответ, содержащий данные одной записи.
     """
     sql = f'SELECT * FROM {table_name} WHERE id = %s;'
     with connection.cursor() as cursor:
@@ -113,11 +111,7 @@ def delete_from_table(request: HttpRequest, id: Union[int, str, None], table_nam
                           непосредственно в коде бэкенда, чтобы исключить SQL-инъекции.
 
     Returns:
-        JsonResponse: Сообщение в формате JSON с одним из следующий статус кодов:
-            - 200 OK: Запись успешно удалена.
-            - 400 Bad Request: Не передан id или ошибка валидации данных (ParseError).
-            - 404 Not Found: Запись с указанным id не найдена в таблице.
-            - 500 Internal Server Error: Непредвиденная ошибка сервера.
+        JsonResponse: Стандартизированный ответ.
     """
     # Наличие id обязательно, надо знать какой ресурс удалять
     parsed_id = parse_id(value=id, field_name='id', required=True)
@@ -155,7 +149,7 @@ def patch_in_table(
         table_meta (TableMeta): Метаданные конкретной таблицы.
 
     Returns:
-        JsonResponse: Ответ в формате JSON.
+        JsonResponse: Стандартизированный ответ.
     """
     # Наличие id обязательно, надо знать какой ресурс обновлять
     parsed_id = parse_id(value=id, field_name='id', required=True)
